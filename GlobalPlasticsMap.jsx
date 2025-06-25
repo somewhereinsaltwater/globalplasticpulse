@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -24,7 +23,7 @@ const GlobalPlasticsMap = () => {
           lng: record.fields.Longitude,
           type: record.fields['Type of Law'],
           description: record.fields.Description,
-          source: record.fields.URL
+          source: record.fields.URL?.trim(), // Trim just in case
         }));
 
         setLocations(records);
@@ -38,39 +37,50 @@ const GlobalPlasticsMap = () => {
   }, []);
 
   useEffect(() => {
-    console.log(`✅ Loaded ${locations.length} locations`);
-  }, [locations]);
-
-  useEffect(() => {
     if (!map.current && mapContainer.current) {
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/light-v11',
-        center: [119.4179, 36.7783], // Focus on California
-        zoom: 4,
+        center: [0, 20],
+        zoom: 1.5,
       });
-    }
 
-    if (map.current && locations.length) {
-      locations.forEach((location) => {
-        const popup = new mapboxgl.Popup({
-          offset: 25,
-          closeButton: false,
-        }).setHTML(`
-          <div style="padding: 10px; max-width: 240px; font-size: 14px; border-radius: 8px;">
-            <strong>${location.country}</strong><br />
-            ${location.type}<br />
-            ${location.description}<br />
-            <a href="${location.source}" target="_blank" rel="noopener noreferrer">Read more</a>
-          </div>
-        `);
-
-        new mapboxgl.Marker({ color: 'black' })
-          .setLngLat([location.lng, location.lat])
-          .setPopup(popup)
-          .addTo(map.current);
-      });
+      // Allow access in dev tools
+      window.__MAP = map.current;
     }
+  }, []);
+
+  useEffect(() => {
+    if (!map.current || !locations.length) return;
+
+    // Remove existing markers if re-rendering
+    if (map.current.markers) {
+      map.current.markers.forEach((marker) => marker.remove());
+    }
+    map.current.markers = [];
+
+    locations.forEach((location) => {
+      if (!location.lat || !location.lng) return;
+
+      const popup = new mapboxgl.Popup({
+        offset: 25,
+        closeButton: false,
+      }).setHTML(`
+        <div style="padding: 10px; max-width: 240px; font-size: 14px; border-radius: 8px;">
+          <strong>${location.country}</strong><br />
+          ${location.type}<br />
+          ${location.description}<br />
+          <a href="${location.source}" target="_blank" rel="noopener noreferrer">Read more</a>
+        </div>
+      `);
+
+      const marker = new mapboxgl.Marker({ color: 'black' })
+        .setLngLat([location.lng, location.lat])
+        .setPopup(popup)
+        .addTo(map.current);
+
+      map.current.markers.push(marker);
+    });
   }, [locations]);
 
   return (
