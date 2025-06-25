@@ -15,21 +15,22 @@ const GlobalPlasticsMap = () => {
         const res = await fetch('/api/airtable');
         const data = await res.json();
 
-        console.log("Fetched Airtable data from API route:", data);
+        console.log("✅ Airtable Data:", data);
 
-        const records = data.records.map((record) => ({
-          country: record.fields.Country,
-          lat: record.fields.Latitude,
-          lng: record.fields.Longitude,
-          type: record.fields['Type of Law'],
-          description: record.fields.Description,
-          source: record.fields.URL?.trim(), // Trim just in case
-        }));
+        const records = data.records
+          .filter((record) => record.fields.Latitude && record.fields.Longitude)
+          .map((record) => ({
+            country: record.fields.Country,
+            lat: parseFloat(record.fields.Latitude),
+            lng: parseFloat(record.fields.Longitude),
+            type: record.fields['Type of Law'],
+            description: record.fields.Description,
+            source: (record.fields.URL || '').trim(),
+          }));
 
         setLocations(records);
       } catch (error) {
-        console.error('Failed to load data from API route:', error);
-        alert('❌ API route fetch failed – check logs!');
+        console.error('❌ API route fetch failed:', error);
       }
     };
 
@@ -41,32 +42,30 @@ const GlobalPlasticsMap = () => {
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/light-v11',
-        center: [0, 20],
-        zoom: 1.5,
+        center: [-119.4179, 36.7783], // California as default center
+        zoom: 3.5,
       });
 
-      // Allow access in dev tools
+      map.current.markers = [];
       window.__MAP = map.current;
     }
   }, []);
 
   useEffect(() => {
-    if (!map.current || !locations.length) return;
+    if (!map.current || locations.length === 0) return;
 
-    // Remove existing markers if re-rendering
-    if (map.current.markers) {
-      map.current.markers.forEach((marker) => marker.remove());
-    }
+    // Clear existing markers
+    map.current.markers.forEach((marker) => marker.remove());
     map.current.markers = [];
 
-    locations.forEach((location) => {
-      if (!location.lat || !location.lng) return;
+    locations.forEach((location, idx) => {
+      if (!location.lat || !location.lng) {
+        console.warn(`⚠️ Skipped location missing coordinates: ${location.country}`);
+        return;
+      }
 
-      const popup = new mapboxgl.Popup({
-        offset: 25,
-        closeButton: false,
-      }).setHTML(`
-        <div style="padding: 10px; max-width: 240px; font-size: 14px; border-radius: 8px;">
+      const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
+        <div style="padding: 10px; max-width: 240px; font-size: 14px;">
           <strong>${location.country}</strong><br />
           ${location.type}<br />
           ${location.description}<br />
@@ -80,7 +79,17 @@ const GlobalPlasticsMap = () => {
         .addTo(map.current);
 
       map.current.markers.push(marker);
+
+      console.log(`📍 Marker ${idx + 1} added for ${location.country}`);
     });
+
+    // Optional: Fly to first marker
+    if (locations.length > 0) {
+      map.current.flyTo({
+        center: [locations[0].lng, locations[0].lat],
+        zoom: 3.5,
+      });
+    }
   }, [locations]);
 
   return (
