@@ -15,27 +15,36 @@ const GlobalPlasticsMap = () => {
         const res = await fetch('/api/airtable');
         const data = await res.json();
 
-        console.log("✅ Airtable API response:", data);
-
         const records = data.records
-          .filter(record =>
-            record.fields &&
-            record.fields.Latitude &&
-            record.fields.Longitude
+          .filter(
+            (record) =>
+              record.fields &&
+              typeof record.fields.Latitude === 'number' &&
+              typeof record.fields.Longitude === 'number'
           )
-          .map(record => ({
-            country: record.fields.Country || "Unknown",
+          .map((record) => ({
+            country: record.fields.Country,
             lat: record.fields.Latitude,
             lng: record.fields.Longitude,
-            type: record.fields['Type of Law'] || "No type",
-            description: record.fields.Description || "No description provided.",
-            source: record.fields.URL || "#"
+            type: record.fields['Type of Law'],
+            description: record.fields.Description,
+            source: record.fields.URL
           }));
 
-        console.log(`📍 Valid locations found: ${records.length}`, records);
+        const skipped = data.records.filter(
+          (record) =>
+            !record.fields ||
+            typeof record.fields.Latitude !== 'number' ||
+            typeof record.fields.Longitude !== 'number'
+        );
+        if (skipped.length > 0) {
+          console.warn('⚠️ Skipped records due to missing or invalid coordinates:', skipped);
+        }
+
         setLocations(records);
       } catch (error) {
-        console.error('❌ Failed to fetch Airtable data:', error);
+        console.error('❌ Failed to load data from API route:', error);
+        alert('API route fetch failed – check logs!');
       }
     };
 
@@ -47,17 +56,14 @@ const GlobalPlasticsMap = () => {
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/light-v11',
-        center: [-119.4179, 36.7783], // California
-        zoom: 4,
+        center: [0, 20],
+        zoom: 1.5,
       });
     }
 
     if (map.current && locations.length) {
       locations.forEach((location) => {
-        const popup = new mapboxgl.Popup({
-          offset: 25,
-          closeButton: false,
-        }).setHTML(\`
+        const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(\`
           <div style="padding: 10px; max-width: 240px; font-size: 14px; border-radius: 8px;">
             <strong>\${location.country}</strong><br />
             \${location.type}<br />
