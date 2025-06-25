@@ -15,22 +15,21 @@ const GlobalPlasticsMap = () => {
         const res = await fetch('/api/airtable');
         const data = await res.json();
 
-        console.log("✅ Airtable Data:", data);
+        console.log("Fetched Airtable data from API route:", data);
 
-        const records = data.records
-          .filter((record) => record.fields.Latitude && record.fields.Longitude)
-          .map((record) => ({
-            country: record.fields.Country,
-            lat: parseFloat(record.fields.Latitude),
-            lng: parseFloat(record.fields.Longitude),
-            type: record.fields['Type of Law'],
-            description: record.fields.Description,
-            source: (record.fields.URL || '').trim(),
-          }));
+        const records = data.records.map((record) => ({
+          country: record.fields.Country,
+          lat: record.fields.Latitude,
+          lng: record.fields.Longitude,
+          type: record.fields['Type of Law'],
+          description: record.fields.Description,
+          source: record.fields.URL
+        }));
 
         setLocations(records);
       } catch (error) {
-        console.error('❌ API route fetch failed:', error);
+        console.error('Failed to load data from API route:', error);
+        alert('❌ API route fetch failed – check logs!');
       }
     };
 
@@ -38,63 +37,65 @@ const GlobalPlasticsMap = () => {
   }, []);
 
   useEffect(() => {
+    console.log(`✅ Loaded ${locations.length} locations`);
+  }, [locations]);
+
+  useEffect(() => {
     if (!map.current && mapContainer.current) {
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/light-v11',
-        center: [-119.4179, 36.7783], // California as default center
-        zoom: 3.5,
+        center: [-122.4194, 37.7749], // San Francisco (test location)
+        zoom: 3,
       });
 
-      map.current.markers = [];
-      window.__MAP = map.current;
+      map.current.on('load', () => {
+        map.current.resize();
+
+        // 🚨 Test marker to confirm frontend is working
+        new mapboxgl.Marker({ color: 'red' })
+          .setLngLat([-122.4194, 37.7749])
+          .setPopup(
+            new mapboxgl.Popup({ offset: 25 }).setText('Test Marker - San Francisco')
+          )
+          .addTo(map.current);
+      });
     }
-  }, []);
 
-  useEffect(() => {
-    if (!map.current || locations.length === 0) return;
+    if (map.current && locations.length) {
+      locations.forEach((location) => {
+        if (location.lat && location.lng) {
+          const popup = new mapboxgl.Popup({
+            offset: 25,
+            closeButton: false,
+          }).setHTML(`
+            <div style="padding: 10px; max-width: 240px; font-size: 14px; border-radius: 8px;">
+              <strong>${location.country}</strong><br />
+              ${location.type}<br />
+              ${location.description}<br />
+              <a href="${location.source}" target="_blank" rel="noopener noreferrer">Read more</a>
+            </div>
+          `);
 
-    // Clear existing markers
-    map.current.markers.forEach((marker) => marker.remove());
-    map.current.markers = [];
-
-    locations.forEach((location, idx) => {
-      if (!location.lat || !location.lng) {
-        console.warn(`⚠️ Skipped location missing coordinates: ${location.country}`);
-        return;
-      }
-
-      const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
-        <div style="padding: 10px; max-width: 240px; font-size: 14px;">
-          <strong>${location.country}</strong><br />
-          ${location.type}<br />
-          ${location.description}<br />
-          <a href="${location.source}" target="_blank" rel="noopener noreferrer">Read more</a>
-        </div>
-      `);
-
-      const marker = new mapboxgl.Marker({ color: 'black' })
-        .setLngLat([location.lng, location.lat])
-        .setPopup(popup)
-        .addTo(map.current);
-
-      map.current.markers.push(marker);
-
-      console.log(`📍 Marker ${idx + 1} added for ${location.country}`);
-    });
-
-    // Optional: Fly to first marker
-    if (locations.length > 0) {
-      map.current.flyTo({
-        center: [locations[0].lng, locations[0].lat],
-        zoom: 3.5,
+          new mapboxgl.Marker({ color: 'black' })
+            .setLngLat([location.lng, location.lat])
+            .setPopup(popup)
+            .addTo(map.current);
+        }
       });
     }
   }, [locations]);
 
   return (
     <>
-      <div ref={mapContainer} style={{ width: '100%', height: '100vh' }} />
+      <div
+        ref={mapContainer}
+        style={{
+          width: '100%',
+          height: '100vh',
+          backgroundColor: 'blue', // 💡 temporary blue background
+        }}
+      />
       {locations.length === 0 && (
         <div style={{ position: 'absolute', top: 10, left: 10, background: 'white', padding: '8px', zIndex: 999 }}>
           No locations loaded
