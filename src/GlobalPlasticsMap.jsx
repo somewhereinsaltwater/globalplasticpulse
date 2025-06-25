@@ -1,3 +1,5 @@
+// GlobalPlasticsMap.jsx
+
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -17,6 +19,7 @@ const GlobalPlasticsMap = () => {
 
         const records = data.records.map((record) => ({
           country: record.fields.Country,
+          region: record.fields.Location,
           lat: record.fields.Latitude,
           lng: record.fields.Longitude,
           type: record.fields['Type of Law'],
@@ -26,8 +29,8 @@ const GlobalPlasticsMap = () => {
 
         setLocations(records);
       } catch (error) {
-        console.error('Failed to load data from API route:', error);
-        alert('❌ API route fetch failed – check logs!');
+        console.error('❌ Failed to load data from API route:', error);
+        alert('API fetch failed. Check console for more details.');
       }
     };
 
@@ -48,28 +51,49 @@ const GlobalPlasticsMap = () => {
       locations.forEach((location) => {
         const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
           <div style="
-            font-family: 'Arial', sans-serif;
-            font-size: 13px;
-            line-height: 1.5;
-            background: #f9f9f9;
-            padding: 12px;
-            border-radius: 6px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            max-width: 260px;
+            background-color: #f1ede7;
+            border: 2px solid black;
+            padding: 16px;
+            max-width: 280px;
+            font-family: 'Helvetica Neue', sans-serif;
+            color: #000;
+            font-size: 14px;
+            border-radius: 8px;
+            box-shadow: 3px 3px 0 #000;
           ">
-            <div style="font-weight: bold; color: #333;">${location.country} — ${location.type}</div>
-            <div style="margin-top: 6px; color: #555;">
+            <div style="font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #ff5800;">
+              ${location.type?.toUpperCase() || 'POLICY'}
+            </div>
+            <div style="font-size: 16px; font-weight: 700; margin-bottom: 6px;">
+              ${location.country}${location.region ? ` — ${location.region}` : ''}
+            </div>
+            <div style="margin-bottom: 10px; line-height: 1.4;">
               ${location.description}
             </div>
-            <div style="margin-top: 8px; font-size: 12px; color: #888;">
-              <a href="${location.source}" target="_blank" rel="noopener noreferrer" style="color: #0066cc; text-decoration: none;">
-                Source ↗
-              </a>
-            </div>
+            <a href="${location.source}" target="_blank" rel="noopener noreferrer" style="
+              display: inline-block;
+              margin-top: 8px;
+              padding: 6px 10px;
+              font-size: 12px;
+              font-weight: bold;
+              background-color: black;
+              color: white;
+              text-decoration: none;
+              border-radius: 4px;
+            ">READ MORE</a>
           </div>
         `);
 
-        new mapboxgl.Marker({ color: 'black' })
+        const markerEl = document.createElement('div');
+        markerEl.style.width = '16px';
+        markerEl.style.height = '16px';
+        markerEl.style.backgroundColor = 'black';
+        markerEl.style.borderRadius = '50%';
+        markerEl.style.border = '2px solid white';
+        markerEl.style.boxShadow = '0 0 4px rgba(0,0,0,0.3)';
+        markerEl.style.cursor = 'pointer';
+
+        new mapboxgl.Marker(markerEl)
           .setLngLat([location.lng, location.lat])
           .setPopup(popup)
           .addTo(map.current);
@@ -87,15 +111,7 @@ const GlobalPlasticsMap = () => {
         }}
       />
       {locations.length === 0 && (
-        <div style={{
-          position: 'absolute',
-          top: 10,
-          left: 10,
-          background: 'white',
-          padding: '8px',
-          zIndex: 999,
-          fontSize: '14px',
-        }}>
+        <div style={{ position: 'absolute', top: 10, left: 10, background: 'white', padding: '8px', zIndex: 999 }}>
           No locations loaded
         </div>
       )}
