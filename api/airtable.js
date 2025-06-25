@@ -1,9 +1,7 @@
-// /api/airtable.js
 export default async function handler(req, res) {
-const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN;
-const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
-const AIRTABLE_TABLE_NAME = process.env.AIRTABLE_TABLE_NAME;
-
+  const token = process.env.AIRTABLE_TOKEN;
+  const baseId = process.env.AIRTABLE_BASE_ID;
+  const tableName = process.env.AIRTABLE_TABLE_NAME;
 
   if (!token || !baseId || !tableName) {
     return res.status(500).json({ error: 'Missing Airtable environment variables' });
