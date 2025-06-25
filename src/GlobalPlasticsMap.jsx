@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -15,7 +14,6 @@ const GlobalPlasticsMap = () => {
       try {
         const res = await fetch('/api/airtable');
         const data = await res.json();
-
         console.log("Fetched Airtable data from API route:", data);
 
         const records = data.records.map((record) => ({
@@ -46,40 +44,34 @@ const GlobalPlasticsMap = () => {
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/light-v11',
-        center: [-122.4194, 37.7749], // San Francisco
-        zoom: 3,
-      });
-
-      map.current.on('load', () => {
-        map.current.resize();
-
-        new mapboxgl.Marker({ color: 'red' })
-          .setLngLat([-122.4194, 37.7749])
-          .setPopup(new mapboxgl.Popup({ offset: 25 }).setText('Test Marker - San Francisco'))
-          .addTo(map.current);
+        center: [0, 20],
+        zoom: 1.5,
       });
     }
 
     if (map.current && locations.length) {
       locations.forEach((location) => {
-        if (location.lat && location.lng) {
-          const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(\`
-            <div style="padding: 10px; max-width: 240px; font-size: 14px; border-radius: 8px;">
-              <strong>\${location.country}</strong><br />
-              \${location.type}<br />
-              \${location.description}<br />
-              <a href="\${location.source}" target="_blank" rel="noopener noreferrer">Read more</a>
-            </div>
-          \`);
+        const popup = new mapboxgl.Popup({
+          offset: 25,
+          closeButton: false,
+        }).setHTML(`
+          <div style="padding: 10px; max-width: 240px; font-size: 14px; border-radius: 8px;">
+            <strong>${location.country}</strong><br />
+            ${location.type}<br />
+            ${location.description}<br />
+            <a href="${location.source}" target="_blank" rel="noopener noreferrer">Read more</a>
+          </div>
+        `);
 
-          new mapboxgl.Marker({ color: 'black' })
-            .setLngLat([location.lng, location.lat])
-            .setPopup(popup)
-            .addTo(map.current);
-        }
+        new mapboxgl.Marker({ color: 'black' })
+          .setLngLat([location.lng, location.lat])
+          .setPopup(popup)
+          .addTo(map.current);
       });
     }
   }, [locations]);
+
+  console.log('🔥 This is the latest frontend code 🔥');
 
   return (
     <>
@@ -88,7 +80,7 @@ const GlobalPlasticsMap = () => {
         style={{
           width: '100%',
           height: '100vh',
-          backgroundColor: 'blue',
+          backgroundColor: 'blue', // 💡 temporary blue background
         }}
       />
       {locations.length === 0 && (
