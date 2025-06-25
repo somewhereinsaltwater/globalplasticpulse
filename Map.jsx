@@ -1,0 +1,60 @@
+import React, { useEffect, useRef, useState } from 'react';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
+
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
+
+const GlobalPlasticsMap = () => {
+  const mapContainer = useRef(null);
+  const map = useRef(null);
+  const [locations, setLocations] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch("/api/airtable");
+        const data = await res.json();
+        setLocations(data);
+      } catch (error) {
+        console.error("Error fetching locations:", error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (!map.current && mapContainer.current) {
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/light-v11',
+        center: [0, 20],
+        zoom: 1.5,
+      });
+    }
+
+    if (map.current && locations.length) {
+      locations.forEach((location) => {
+        const popup = new mapboxgl.Popup({
+          offset: 25,
+          closeButton: false,
+        }).setHTML(`
+          <div style="padding: 10px; max-width: 240px; font-size: 14px; border-radius: 8px;">
+            <strong>${location.country}</strong><br />
+            ${location.type}<br />
+            ${location.description}<br />
+            <a href="${location.source}" target="_blank" rel="noopener noreferrer">Read more</a>
+          </div>
+        `);
+
+        new mapboxgl.Marker({ color: 'black' })
+          .setLngLat([location.lng, location.lat])
+          .setPopup(popup)
+          .addTo(map.current);
+      });
+    }
+  }, [locations]);
+
+  return <div ref={mapContainer} style={{ width: "100%", height: "100vh" }} />;
+};
+
+export default GlobalPlasticsMap;
