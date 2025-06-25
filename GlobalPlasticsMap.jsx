@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -15,36 +16,21 @@ const GlobalPlasticsMap = () => {
         const res = await fetch('/api/airtable');
         const data = await res.json();
 
-        const records = data.records
-          .filter(
-            (record) =>
-              record.fields &&
-              typeof record.fields.Latitude === 'number' &&
-              typeof record.fields.Longitude === 'number'
-          )
-          .map((record) => ({
-            country: record.fields.Country,
-            lat: record.fields.Latitude,
-            lng: record.fields.Longitude,
-            type: record.fields['Type of Law'],
-            description: record.fields.Description,
-            source: record.fields.URL
-          }));
+        console.log("Fetched Airtable data from API route:", data);
 
-        const skipped = data.records.filter(
-          (record) =>
-            !record.fields ||
-            typeof record.fields.Latitude !== 'number' ||
-            typeof record.fields.Longitude !== 'number'
-        );
-        if (skipped.length > 0) {
-          console.warn('⚠️ Skipped records due to missing or invalid coordinates:', skipped);
-        }
+        const records = data.records.map((record) => ({
+          country: record.fields.Country,
+          lat: record.fields.Latitude,
+          lng: record.fields.Longitude,
+          type: record.fields['Type of Law'],
+          description: record.fields.Description,
+          source: record.fields.URL
+        }));
 
         setLocations(records);
       } catch (error) {
-        console.error('❌ Failed to load data from API route:', error);
-        alert('API route fetch failed – check logs!');
+        console.error('Failed to load data from API route:', error);
+        alert('❌ API route fetch failed – check logs!');
       }
     };
 
@@ -52,25 +38,32 @@ const GlobalPlasticsMap = () => {
   }, []);
 
   useEffect(() => {
+    console.log(`✅ Loaded ${locations.length} locations`);
+  }, [locations]);
+
+  useEffect(() => {
     if (!map.current && mapContainer.current) {
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/light-v11',
-        center: [0, 20],
-        zoom: 1.5,
+        center: [119.4179, 36.7783], // Focus on California
+        zoom: 4,
       });
     }
 
     if (map.current && locations.length) {
       locations.forEach((location) => {
-        const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(\`
+        const popup = new mapboxgl.Popup({
+          offset: 25,
+          closeButton: false,
+        }).setHTML(`
           <div style="padding: 10px; max-width: 240px; font-size: 14px; border-radius: 8px;">
-            <strong>\${location.country}</strong><br />
-            \${location.type}<br />
-            \${location.description}<br />
-            <a href="\${location.source}" target="_blank" rel="noopener noreferrer">Read more</a>
+            <strong>${location.country}</strong><br />
+            ${location.type}<br />
+            ${location.description}<br />
+            <a href="${location.source}" target="_blank" rel="noopener noreferrer">Read more</a>
           </div>
-        \`);
+        `);
 
         new mapboxgl.Marker({ color: 'black' })
           .setLngLat([location.lng, location.lat])
