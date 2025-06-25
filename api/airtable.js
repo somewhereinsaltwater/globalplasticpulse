@@ -1,26 +1,32 @@
-
+// /api/airtable.js
 export default async function handler(req, res) {
   const token = process.env.AIRTABLE_TOKEN;
   const baseId = process.env.AIRTABLE_BASE_ID;
   const tableName = process.env.AIRTABLE_TABLE_NAME;
 
-  const url = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}`;
+  if (!token || !baseId || !tableName) {
+    return res.status(500).json({ error: 'Missing Airtable environment variables' });
+  }
 
   try {
-    const response = await fetch(url, {
+    const airtableUrl = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}?view=Grid%20view`;
+
+    const response = await fetch(airtableUrl, {
       headers: {
         Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
       },
     });
 
     if (!response.ok) {
-      return res.status(response.status).json({ error: 'Failed to fetch from Airtable' });
+      const errorText = await response.text();
+      return res.status(response.status).json({ error: errorText });
     }
 
     const data = await response.json();
     return res.status(200).json(data);
   } catch (err) {
-    console.error('API route error:', err);
-    return res.status(500).json({ error: 'Server error' });
+    console.error('Airtable API fetch failed:', err);
+    return res.status(500).json({ error: 'Failed to fetch data from Airtable' });
   }
 }
