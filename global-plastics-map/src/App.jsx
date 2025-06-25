@@ -20,7 +20,7 @@ const mapData = [
     type: 'Plastic Bag Levy',
     description: 'Ireland introduced a €0.15 plastic bag levy in 2002, which reduced usage by 90%.',
     source: 'https://www.reuters.com'
-  },
+  }
 ];
 
 const GlobalPlasticsMap = () => {
