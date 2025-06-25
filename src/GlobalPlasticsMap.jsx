@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -14,16 +15,22 @@ const GlobalPlasticsMap = () => {
       try {
         const res = await fetch('/api/airtable');
         const data = await res.json();
-        console.log("Fetched Airtable data from API route:", data);
 
-        const records = data.records.map((record) => ({
-          country: record.fields.Country,
-          lat: record.fields.Latitude,
-          lng: record.fields.Longitude,
-          type: record.fields['Type of Law'],
-          description: record.fields.Description,
-          source: record.fields.URL
-        }));
+        const records = data.records
+          .filter(record =>
+            record.fields.Latitude &&
+            record.fields.Longitude &&
+            !isNaN(record.fields.Latitude) &&
+            !isNaN(record.fields.Longitude)
+          )
+          .map((record) => ({
+            country: record.fields.Country,
+            lat: parseFloat(record.fields.Latitude),
+            lng: parseFloat(record.fields.Longitude),
+            type: record.fields['Type of Law'],
+            description: record.fields.Description,
+            source: record.fields.URL
+          }));
 
         setLocations(records);
       } catch (error) {
@@ -34,10 +41,6 @@ const GlobalPlasticsMap = () => {
 
     fetchData();
   }, []);
-
-  useEffect(() => {
-    console.log(`✅ Loaded ${locations.length} locations`);
-  }, [locations]);
 
   useEffect(() => {
     if (!map.current && mapContainer.current) {
@@ -71,16 +74,13 @@ const GlobalPlasticsMap = () => {
     }
   }, [locations]);
 
-  console.log('🔥 This is the latest frontend code 🔥');
-
   return (
     <>
       <div
         ref={mapContainer}
         style={{
           width: '100%',
-          height: '100vh',
-          backgroundColor: 'blue', // 💡 temporary blue background
+          height: '100vh'
         }}
       />
       {locations.length === 0 && (
