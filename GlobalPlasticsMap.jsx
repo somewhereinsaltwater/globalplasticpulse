@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -16,21 +15,27 @@ const GlobalPlasticsMap = () => {
         const res = await fetch('/api/airtable');
         const data = await res.json();
 
-        console.log("Fetched Airtable data from API route:", data);
+        console.log("✅ Airtable API response:", data);
 
-        const records = data.records.map((record) => ({
-          country: record.fields.Country,
-          lat: record.fields.Latitude,
-          lng: record.fields.Longitude,
-          type: record.fields['Type of Law'],
-          description: record.fields.Description,
-          source: record.fields.URL
-        }));
+        const records = data.records
+          .filter(record =>
+            record.fields &&
+            record.fields.Latitude &&
+            record.fields.Longitude
+          )
+          .map(record => ({
+            country: record.fields.Country || "Unknown",
+            lat: record.fields.Latitude,
+            lng: record.fields.Longitude,
+            type: record.fields['Type of Law'] || "No type",
+            description: record.fields.Description || "No description provided.",
+            source: record.fields.URL || "#"
+          }));
 
+        console.log(`📍 Valid locations found: ${records.length}`, records);
         setLocations(records);
       } catch (error) {
-        console.error('Failed to load data from API route:', error);
-        alert('❌ API route fetch failed – check logs!');
+        console.error('❌ Failed to fetch Airtable data:', error);
       }
     };
 
@@ -38,16 +43,12 @@ const GlobalPlasticsMap = () => {
   }, []);
 
   useEffect(() => {
-    console.log(`✅ Loaded ${locations.length} locations`);
-  }, [locations]);
-
-  useEffect(() => {
     if (!map.current && mapContainer.current) {
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/light-v11',
-        center: [0, 20],
-        zoom: 1.5,
+        center: [-119.4179, 36.7783], // California
+        zoom: 4,
       });
     }
 
