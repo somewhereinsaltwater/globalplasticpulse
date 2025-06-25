@@ -21,7 +21,7 @@ const GlobalPlasticsMap = () => {
           lng: record.fields.Longitude,
           type: record.fields['Type of Law'],
           description: record.fields.Description,
-          source: record.fields.URL
+          source: record.fields.URL,
         }));
 
         setLocations(records);
@@ -46,15 +46,26 @@ const GlobalPlasticsMap = () => {
 
     if (map.current && locations.length) {
       locations.forEach((location) => {
-        const popup = new mapboxgl.Popup({
-          offset: 25,
-          closeButton: false,
-        }).setHTML(`
-          <div style="padding: 10px; max-width: 240px; font-size: 14px; border-radius: 8px;">
-            <strong>${location.country}</strong><br />
-            ${location.type}<br />
-            ${location.description}<br />
-            <a href="${location.source}" target="_blank" rel="noopener noreferrer">Read more</a>
+        const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
+          <div style="
+            font-family: 'Arial', sans-serif;
+            font-size: 13px;
+            line-height: 1.5;
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            max-width: 260px;
+          ">
+            <div style="font-weight: bold; color: #333;">${location.country} — ${location.type}</div>
+            <div style="margin-top: 6px; color: #555;">
+              ${location.description}
+            </div>
+            <div style="margin-top: 8px; font-size: 12px; color: #888;">
+              <a href="${location.source}" target="_blank" rel="noopener noreferrer" style="color: #0066cc; text-decoration: none;">
+                Source ↗
+              </a>
+            </div>
           </div>
         `);
 
@@ -66,7 +77,30 @@ const GlobalPlasticsMap = () => {
     }
   }, [locations]);
 
-  return <div ref={mapContainer} style={{ width: '100%', height: '100vh' }} />;
+  return (
+    <>
+      <div
+        ref={mapContainer}
+        style={{
+          width: '100%',
+          height: '100vh',
+        }}
+      />
+      {locations.length === 0 && (
+        <div style={{
+          position: 'absolute',
+          top: 10,
+          left: 10,
+          background: 'white',
+          padding: '8px',
+          zIndex: 999,
+          fontSize: '14px',
+        }}>
+          No locations loaded
+        </div>
+      )}
+    </>
+  );
 };
 
 export default GlobalPlasticsMap;
