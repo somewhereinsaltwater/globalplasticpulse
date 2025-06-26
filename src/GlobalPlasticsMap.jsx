@@ -21,7 +21,7 @@ const GlobalPlasticsMap = () => {
           location: record.fields.Location,
           lat: record.fields.Latitude,
           lng: record.fields.Longitude,
-          type: record.fields['Type of Law'],
+          type: record.fields['Type of Law'] || [],
           description: record.fields.Description,
           source: record.fields.URL
         }));
@@ -46,7 +46,7 @@ const GlobalPlasticsMap = () => {
   if (map.current && locations.length) {
     // No need to remove layers like Leaflet – just add markers
     locations
-      .filter(loc => selectedType === 'All' || loc.type === selectedType)
+      .filter(loc => selectedType === 'All' || loc.type.includes(selectedType))
       .forEach((location) => {
         const popup = new mapboxgl.Popup({
   offset: 25,
@@ -68,7 +68,8 @@ const GlobalPlasticsMap = () => {
   }
 }, [locations, selectedType]);
 
-  const types = ['All', ...Array.from(new Set(locations.map(loc => loc.type)))];
+ const allTypes = locations.flatMap(loc => loc.type); // flatten all arrays into one list
+const types = ['All', ...Array.from(new Set(allTypes))];
 
   return (
     <div className="map-wrapper">
