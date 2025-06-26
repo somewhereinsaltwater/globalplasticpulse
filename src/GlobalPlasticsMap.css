@@ -7,7 +7,7 @@
 
 /* Default Popup styling */
 .mapboxgl-popup-content {
-  background-color: #f1ede7;
+  background-color: transparent;
   padding: 0px;
   max-width: 280px;
   color: #000;
@@ -47,6 +47,10 @@
   color: white;
   text-decoration: none;
   border-radius: 4px;
+}
+
+.mapboxgl-popup-tip {
+  display: none !important;
 }
 
 /* Updated filter container styling */
