@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import './GlobalPlasticsMap.css';
-
+import logo from './logo.svg';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
