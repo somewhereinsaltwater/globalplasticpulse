@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import './GlobalPlasticsMap.css';
@@ -10,6 +11,8 @@ const GlobalPlasticsMap = () => {
   const map = useRef(null);
   const [locations, setLocations] = useState([]);
   const [activeTypes, setActiveTypes] = useState([]);
+  const popupRefs = useRef([]);
+  const markerRefs = useRef([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,6 +50,10 @@ const GlobalPlasticsMap = () => {
     }
 
     if (map.current) {
+      popupRefs.current.forEach(p => p.remove());
+      popupRefs.current = [];
+      markerRefs.current = [];
+
       const existingMarkers = document.querySelectorAll('.mapboxgl-marker');
       existingMarkers.forEach((marker) => marker.remove());
 
@@ -59,7 +66,11 @@ const GlobalPlasticsMap = () => {
           const popup = new mapboxgl.Popup({
             offset: 25,
             closeButton: false,
-          }).setHTML(`
+          }).setDOMContent(document.createElement('div'));
+
+          const htmlContent = document.createElement('div');
+          htmlContent.className = 'popup-content';
+          htmlContent.innerHTML = `
             <div style="
               background-color: #f1ede7;
               border: 2px solid black;
@@ -70,6 +81,8 @@ const GlobalPlasticsMap = () => {
               font-size: 14px;
               border-radius: 8px;
               box-shadow: 3px 3px 0 #000;
+              opacity: 0;
+              transition: opacity 300ms ease-in-out;
             ">
               <div style="font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #ff5800;">
                 ${Array.isArray(location.type)
@@ -92,12 +105,28 @@ const GlobalPlasticsMap = () => {
                 border-radius: 4px;
               ">READ MORE</a>
             </div>
-          `);
+          `;
 
-          new mapboxgl.Marker({ color: 'black' })
+          popup.setDOMContent(htmlContent);
+
+          const marker = new mapboxgl.Marker({ color: 'black' })
             .setLngLat([location.lng, location.lat])
-            .setPopup(popup)
             .addTo(map.current);
+
+          marker.getElement().addEventListener('click', () => {
+            if (popup.isOpen()) {
+              popup.remove();
+            } else {
+              popup.addTo(map.current);
+              popup.setLngLat([location.lng, location.lat]);
+              requestAnimationFrame(() => {
+                htmlContent.firstChild.style.opacity = '1';
+              });
+            }
+          });
+
+          popupRefs.current.push(popup);
+          markerRefs.current.push(marker);
         });
     }
   }, [locations, activeTypes]);
