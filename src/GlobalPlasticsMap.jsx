@@ -1,77 +1,107 @@
-import React, { useEffect, useRef, useState } from "react";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
-import "./GlobalPlasticsMap.css";
+
+import React, { useEffect, useRef, useState } from 'react';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
-const GlobalPlasticsMap = ({ locations }) => {
+const GlobalPlasticsMap = () => {
   const mapContainer = useRef(null);
   const map = useRef(null);
-  const [selectedLaw, setSelectedLaw] = useState("All");
-
-  const lawTypes = ["All", ...new Set(locations.map((loc) => loc["Type of Law"]))];
+  const [locations, setLocations] = useState([]);
+  const [selectedType, setSelectedType] = useState('All');
 
   useEffect(() => {
-    if (map.current) return;
+    const fetchData = async () => {
+      try {
+        const res = await fetch('/api/airtable');
+        const data = await res.json();
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: "mapbox://styles/mapbox/light-v10",
-      center: [0, 20],
-      zoom: 1.5,
-    });
+        const records = data.records.map((record) => ({
+          country: record.fields.Country,
+          location: record.fields.Location,
+          lat: record.fields.Latitude,
+          lng: record.fields.Longitude,
+          type: record.fields['Type of Law'],
+          description: record.fields.Description,
+          source: record.fields.URL
+        }));
 
-    map.current.addControl(new mapboxgl.NavigationControl(), "top-right");
+        setLocations(records);
+      } catch (error) {
+        console.error('Failed to load data from API route:', error);
+        alert('❌ API route fetch failed – check logs!');
+      }
+    };
+
+    fetchData();
   }, []);
 
   useEffect(() => {
-    if (!map.current) return;
+    if (!map.current && mapContainer.current) {
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/light-v11',
+        center: [0, 20],
+        zoom: 1.5,
+      });
+    }
 
-    const filtered = selectedLaw === "All"
-      ? locations
-      : locations.filter((loc) => loc["Type of Law"] === selectedLaw);
+    if (map.current) {
+      // Remove existing markers
+      const existingMarkers = document.getElementsByClassName('mapboxgl-marker');
+      while (existingMarkers.length > 0) {
+        existingMarkers[0].remove();
+      }
 
-    document.querySelectorAll(".mapboxgl-popup").forEach((el) => el.remove());
+      const filtered = selectedType === 'All'
+        ? locations
+        : locations.filter(loc => loc.type === selectedType);
 
-    filtered.forEach((location) => {
-      const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
-        <div style="
-          background-color: #f1ede7;
-          border-radius: 10px;
-          padding: 12px;
-          max-width: 250px;
-          font-family: 'Helvetica Neue', sans-serif;
-          font-size: 13px;
-          box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-          <strong>${location.Country}</strong><br/>
-          <em>${location["Type of Law"]}</em><br/>
-          ${location.Policy || ""}<br/>
-          <a href="${location.Source}" target="_blank" style="color: #0a66c2;">Read more</a>
-        </div>`);
+      filtered.forEach((location) => {
+        const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(
+          `<div style="background-color:#f1ede7;padding:12px;border-radius:10px;font-family:sans-serif;max-width:260px;">
+            <div style="font-weight:bold;font-size:16px;margin-bottom:6px;">${location.country} - ${location.location}</div>
+            <div style="font-size:14px;margin-bottom:8px;"><strong>${location.type}</strong><br>${location.description}</div>
+            <a href="${location.source}" target="_blank" style="color:#4a90e2;font-weight:bold;">Read more</a>
+          </div>`
+        );
 
-      new mapboxgl.Marker()
-        .setLngLat([location.Longitude, location.Latitude])
-        .setPopup(popup)
-        .addTo(map.current);
-    });
-  }, [selectedLaw, locations]);
+        new mapboxgl.Marker({ color: 'black' })
+          .setLngLat([location.lng, location.lat])
+          .setPopup(popup)
+          .addTo(map.current);
+      });
+    }
+  }, [locations, selectedType]);
+
+  const uniqueTypes = ['All', ...Array.from(new Set(locations.map(loc => loc.type)))];
 
   return (
-    <div>
-      <div className="filter-container">
-        {lawTypes.map((type) => (
-          <div
-            key={type}
-            className={`filter-tab ${selectedLaw === type ? "active" : ""}`}
-            onClick={() => setSelectedLaw(type)}
-          >
+    <>
+      <div style={{
+        position: 'absolute', top: 10, left: 10, zIndex: 10, backgroundColor: '#000000cc',
+        borderRadius: '12px', padding: '6px 10px', display: 'flex', gap: '10px',
+        overflowX: 'auto', whiteSpace: 'nowrap', backdropFilter: 'blur(4px)',
+        color: '#fff', fontSize: '14px'
+      }}>
+        {uniqueTypes.map(type => (
+          <div key={type}
+            onClick={() => setSelectedType(type)}
+            style={{
+              padding: '6px 12px',
+              borderRadius: '10px',
+              background: selectedType === type ? '#00ffe0' : '#333',
+              color: selectedType === type ? '#000' : '#fff',
+              cursor: 'pointer',
+              flexShrink: 0
+            }}>
             {type}
           </div>
         ))}
       </div>
-      <div ref={mapContainer} className="map-container" />
-    </div>
+      <div ref={mapContainer} style={{ width: '100%', height: '100vh' }} />
+    </>
   );
 };
 
