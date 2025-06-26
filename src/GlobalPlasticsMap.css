@@ -7,13 +7,13 @@
 
 /* Default Popup styling */
 .mapboxgl-popup-content {
-  background-color: transparent;
-  padding: 0px;
+  background-color: transparent !important;
+  padding: 0 !important;
   max-width: 280px;
   color: #000;
   font-size: 14px;
   border-radius: 8px;
-  box-shadow: 3px 3px 0 #000;
+  box-shadow: 0 !important;
   font-family: 'Helvetica Neue', sans-serif;
   line-height: 1.4;
 }
