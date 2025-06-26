@@ -49,6 +49,7 @@ const GlobalPlasticsMap = () => {
     }
 
     if (map.current) {
+      // Clear previous markers/popups
       popupRefs.current.forEach((p) => p.remove());
       popupRefs.current = [];
       markerRefs.current = [];
@@ -66,8 +67,9 @@ const GlobalPlasticsMap = () => {
         .forEach((location) => {
           const popupContent = document.createElement('div');
           popupContent.className = 'popup-content';
+
           popupContent.innerHTML = `
-            <div class="popup-inner">
+            <div class="popup-inner popup-fade">
               <div style="
                 background-color: #f1ede7;
                 border: 2px solid black;
@@ -120,7 +122,7 @@ const GlobalPlasticsMap = () => {
               if (activePopup) activePopup.remove();
               popup.setLngLat([location.lng, location.lat]).addTo(map.current);
               activePopup = popup;
-              // No JS opacity change needed — fade-in is handled in CSS via .popup-inner
+              // No JS opacity needed — fade is handled by CSS class `.popup-fade`
             }
           });
 

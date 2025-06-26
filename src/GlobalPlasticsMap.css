@@ -56,9 +56,9 @@
 }
 
 /* Fade-in animation for popup content */
-.popup-inner {
-  opacity: 0;
+.popup-fade {
   animation: fadeInPopup 0.3s ease-in forwards;
+  opacity: 0;
 }
 
 @keyframes fadeInPopup {
