@@ -12,6 +12,7 @@ const GlobalPlasticsMap = () => {
   const [activeTypes, setActiveTypes] = useState([]);
   const popupRefs = useRef([]);
   const markerRefs = useRef([]);
+  const activePopupRef = useRef(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,86 +50,80 @@ const GlobalPlasticsMap = () => {
     }
 
     if (map.current) {
-      // Clear previous markers/popups
+      // Remove existing popups and markers
       popupRefs.current.forEach((p) => p.remove());
       popupRefs.current = [];
+      markerRefs.current.forEach((m) => m.remove());
       markerRefs.current = [];
 
-      const existingMarkers = document.querySelectorAll('.mapboxgl-marker');
-      existingMarkers.forEach((marker) => marker.remove());
+      const visibleLocations = locations.filter((location) =>
+        activeTypes.length === 0 || location.type.some((t) => activeTypes.includes(t))
+      );
 
-      let activePopup = null;
+      visibleLocations.forEach((location) => {
+        const popupContent = document.createElement('div');
+        popupContent.className = 'popup-content popup-fade'; // for animation
 
-      locations
-        .filter((location) =>
-          activeTypes.length === 0 ||
-          location.type.some((t) => activeTypes.includes(t))
-        )
-        .forEach((location) => {
-          const popupContent = document.createElement('div');
-          popupContent.className = 'popup-content';
-
-          popupContent.innerHTML = `
-            <div class="popup-inner popup-fade">
-              <div style="
-                background-color: #f1ede7;
-                border: 2px solid black;
-                padding: 16px;
-                max-width: 280px;
-                font-family: 'Helvetica Neue', sans-serif;
-                color: #000;
-                font-size: 14px;
-                border-radius: 8px;
-                box-shadow: 3px 3px 0 #000;
-              ">
-                <div style="font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #ff5800;">
-                  ${Array.isArray(location.type)
-                    ? location.type.join(', ').toUpperCase()
-                    : location.type || 'LAW TYPE'}
-                </div>
-                <div style="font-size: 16px; font-weight: 700; margin-bottom: 6px;">
-                  ${location.country}${location.region ? ` — ${location.region}` : ''}
-                </div>
-                <div style="margin-bottom: 10px; line-height: 1.4;">${location.description}</div>
-                <a href="${location.source}" target="_blank" rel="noopener noreferrer" style="
-                  display: inline-block;
-                  margin-top: 8px;
-                  padding: 6px 10px;
-                  font-size: 12px;
-                  font-weight: bold;
-                  background-color: black;
-                  color: white;
-                  text-decoration: none;
-                  border-radius: 4px;
-                ">READ MORE</a>
+        popupContent.innerHTML = `
+          <div class="popup-inner">
+            <div style="
+              background-color: #f1ede7;
+              border: 2px solid black;
+              padding: 16px;
+              max-width: 280px;
+              font-family: 'Helvetica Neue', sans-serif;
+              color: #000;
+              font-size: 14px;
+              border-radius: 8px;
+              box-shadow: 3px 3px 0 #000;
+            ">
+              <div style="font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #ff5800;">
+                ${Array.isArray(location.type)
+                  ? location.type.join(', ').toUpperCase()
+                  : location.type || 'LAW TYPE'}
               </div>
+              <div style="font-size: 16px; font-weight: 700; margin-bottom: 6px;">
+                ${location.country}${location.region ? ` — ${location.region}` : ''}
+              </div>
+              <div style="margin-bottom: 10px; line-height: 1.4;">${location.description}</div>
+              <a href="${location.source}" target="_blank" rel="noopener noreferrer" style="
+                display: inline-block;
+                margin-top: 8px;
+                padding: 6px 10px;
+                font-size: 12px;
+                font-weight: bold;
+                background-color: black;
+                color: white;
+                text-decoration: none;
+                border-radius: 4px;
+              ">READ MORE</a>
             </div>
-          `;
+          </div>
+        `;
 
-          const popup = new mapboxgl.Popup({
-            offset: 25,
-            closeButton: false,
-          }).setDOMContent(popupContent);
+        const popup = new mapboxgl.Popup({
+          offset: 25,
+          closeButton: false,
+        }).setDOMContent(popupContent);
 
-          const marker = new mapboxgl.Marker({ color: 'black' })
-            .setLngLat([location.lng, location.lat])
-            .addTo(map.current);
+        const marker = new mapboxgl.Marker({ color: 'black' })
+          .setLngLat([location.lng, location.lat])
+          .addTo(map.current);
 
-          marker.getElement().addEventListener('click', () => {
-            if (activePopup === popup) {
-              popup.remove();
-              activePopup = null;
-            } else {
-              if (activePopup) activePopup.remove();
-              popup.setLngLat([location.lng, location.lat]).addTo(map.current);
-              activePopup = popup;
-              // No JS opacity needed — fade is handled by CSS class `.popup-fade`
-            }
-          });
-
-          popupRefs.current.push(popup);
-          markerRefs.current.push(marker);
+        marker.getElement().addEventListener('click', () => {
+          if (activePopupRef.current === popup) {
+            popup.remove();
+            activePopupRef.current = null;
+          } else {
+            if (activePopupRef.current) activePopupRef.current.remove();
+            popup.setLngLat([location.lng, location.lat]).addTo(map.current);
+            activePopupRef.current = popup;
+          }
         });
+
+        popupRefs.current.push(popup);
+        markerRefs.current.push(marker);
+      });
     }
   }, [locations, activeTypes]);
 
