@@ -60,9 +60,9 @@ const GlobalPlasticsMap = () => {
         activeTypes.length === 0 || location.type.some((t) => activeTypes.includes(t))
       );
 
-     visibleLocations.forEach((location) => {
+    visibleLocations.forEach((location) => {
   const popupContent = document.createElement('div');
-  popupContent.className = 'popup-content popup-fade'; // for animation
+  popupContent.className = 'popup-content popup-fade'; // for fade-in effect
 
   popupContent.innerHTML = `
     <div class="popup-inner">
@@ -104,7 +104,7 @@ const GlobalPlasticsMap = () => {
   const popup = new mapboxgl.Popup({
     offset: 25,
     closeButton: false,
-  }).setDOMContent(popupContent); // ✅ Only call this after popup is defined
+  }).setDOMContent(popupContent); // <--- correctly placed here after popup is defined
 
   const marker = new mapboxgl.Marker({ color: 'black' })
     .setLngLat([location.lng, location.lat])
@@ -124,6 +124,7 @@ const GlobalPlasticsMap = () => {
   popupRefs.current.push(popup);
   markerRefs.current.push(marker);
 });
+
     }
   }, [locations, activeTypes]);
 
