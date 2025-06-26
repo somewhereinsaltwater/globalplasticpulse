@@ -58,7 +58,7 @@ const GlobalPlasticsMap = () => {
         )
         .forEach((location) => {
           const popupContent = document.createElement('div');
-          popupContent.className = 'popup-fade';
+          popupContent.className = 'popup-content popup-fade';
 
           popupContent.innerHTML = `
             <div class="popup-inner">

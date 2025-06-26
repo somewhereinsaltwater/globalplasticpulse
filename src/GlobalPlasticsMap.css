@@ -21,10 +21,6 @@
 
 /* New popup internal layout */
 
-.popup-inner {
-  opacity: 0;
-  animation: fadeInPopup 0.3s ease-in forwards;
-}
 
 .popup-type {
   font-size: 11px;
