@@ -55,8 +55,8 @@
   display: none !important;
 }
 
-/* Smooth popup transition */
-.mapboxgl-popup-content.popup-fade {
+/* Fade-in animation for popup content */
+.popup-inner {
   opacity: 0;
   animation: fadeInPopup 0.3s ease-in forwards;
 }

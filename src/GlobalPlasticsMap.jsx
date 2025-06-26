@@ -67,39 +67,39 @@ const GlobalPlasticsMap = () => {
           const popupContent = document.createElement('div');
           popupContent.className = 'popup-content';
           popupContent.innerHTML = `
-            <div style="
-              background-color: #f1ede7;
-              border: 2px solid black;
-              padding: 16px;
-              max-width: 280px;
-              font-family: 'Helvetica Neue', sans-serif;
-              color: #000;
-              font-size: 14px;
-              border-radius: 8px;
-              box-shadow: 3px 3px 0 #000;
-              opacity: 0;
-              transition: opacity 300ms ease-in-out;
-            ">
-              <div style="font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #ff5800;">
-                ${Array.isArray(location.type)
-                  ? location.type.join(', ').toUpperCase()
-                  : location.type || 'LAW TYPE'}
+            <div class="popup-inner">
+              <div style="
+                background-color: #f1ede7;
+                border: 2px solid black;
+                padding: 16px;
+                max-width: 280px;
+                font-family: 'Helvetica Neue', sans-serif;
+                color: #000;
+                font-size: 14px;
+                border-radius: 8px;
+                box-shadow: 3px 3px 0 #000;
+              ">
+                <div style="font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #ff5800;">
+                  ${Array.isArray(location.type)
+                    ? location.type.join(', ').toUpperCase()
+                    : location.type || 'LAW TYPE'}
+                </div>
+                <div style="font-size: 16px; font-weight: 700; margin-bottom: 6px;">
+                  ${location.country}${location.region ? ` — ${location.region}` : ''}
+                </div>
+                <div style="margin-bottom: 10px; line-height: 1.4;">${location.description}</div>
+                <a href="${location.source}" target="_blank" rel="noopener noreferrer" style="
+                  display: inline-block;
+                  margin-top: 8px;
+                  padding: 6px 10px;
+                  font-size: 12px;
+                  font-weight: bold;
+                  background-color: black;
+                  color: white;
+                  text-decoration: none;
+                  border-radius: 4px;
+                ">READ MORE</a>
               </div>
-              <div style="font-size: 16px; font-weight: 700; margin-bottom: 6px;">
-                ${location.country}${location.region ? ` — ${location.region}` : ''}
-              </div>
-              <div style="margin-bottom: 10px; line-height: 1.4;">${location.description}</div>
-              <a href="${location.source}" target="_blank" rel="noopener noreferrer" style="
-                display: inline-block;
-                margin-top: 8px;
-                padding: 6px 10px;
-                font-size: 12px;
-                font-weight: bold;
-                background-color: black;
-                color: white;
-                text-decoration: none;
-                border-radius: 4px;
-              ">READ MORE</a>
             </div>
           `;
 
@@ -120,9 +120,7 @@ const GlobalPlasticsMap = () => {
               if (activePopup) activePopup.remove();
               popup.setLngLat([location.lng, location.lat]).addTo(map.current);
               activePopup = popup;
-              requestAnimationFrame(() => {
-                popupContent.firstChild.style.opacity = '1';
-              });
+              // No JS opacity change needed — fade-in is handled in CSS via .popup-inner
             }
           });
 
