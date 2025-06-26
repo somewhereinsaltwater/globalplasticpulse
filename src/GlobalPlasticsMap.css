@@ -53,7 +53,7 @@
 /* Updated filter container styling */
 .filter-container {
   position: absolute;
-  top: 300px; /* shifted down to appear below the logo */
+  top: 100px; /* shifted down to appear below the logo */
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -101,7 +101,7 @@
 }
 
 .logo img {
-  height: 60px;
+  height: 40px;
 }
 
 /* Responsive styles */
