@@ -1,106 +1,97 @@
-
-import React, { useEffect, useRef, useState } from "react";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
-import "./GlobalPlasticsMap.css"; // Assuming you use a CSS file for styles
+import React, { useEffect, useRef, useState } from 'react';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
+import './GlobalPlasticsMap.css'; // ✅ Importing the external stylesheet
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
-const GlobalPlasticsMap = ({ data }) => {
+const GlobalPlasticsMap = () => {
   const mapContainer = useRef(null);
   const map = useRef(null);
-  const [selectedType, setSelectedType] = useState("All");
+  const [locations, setLocations] = useState([]);
+  const [filteredLocations, setFilteredLocations] = useState([]);
+  const [selectedType, setSelectedType] = useState('All');
 
-  const types = ["All", ...new Set(data.map((item) => item["Type of Law"]))];
+  const types = ['All', 'Ban', 'Regulation', 'Tax'];
 
   useEffect(() => {
-    if (map.current) return; // initialize map only once
+    const fetchData = async () => {
+      try {
+        const res = await fetch('/api/airtable');
+        const data = await res.json();
+        const records = data.records.map((record) => ({
+          country: record.fields.Country,
+          location: record.fields.Location,
+          lat: record.fields.Latitude,
+          lng: record.fields.Longitude,
+          type: record.fields['Type of Law'],
+          description: record.fields.Description,
+          source: record.fields.URL,
+        }));
+        setLocations(records);
+        setFilteredLocations(records);
+      } catch (err) {
+        console.error('Failed to load Airtable data:', err);
+      }
+    };
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: "mapbox://styles/mapbox/light-v10",
-      center: [0, 20],
-      zoom: 1.5,
-    });
-
-    map.current.addControl(new mapboxgl.NavigationControl(), "top-right");
+    fetchData();
   }, []);
 
   useEffect(() => {
-    if (!map.current) return;
+    if (!map.current && mapContainer.current) {
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/light-v11',
+        center: [0, 20],
+        zoom: 1.5,
+      });
+    }
 
-    document.querySelectorAll(".mapboxgl-popup").forEach((popup) => popup.remove());
+    if (map.current) {
+      map.current.on('load', () => {
+        filteredLocations.forEach((location) => {
+          const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(
+            `<div class="popup-content">
+              <div class="popup-header">${location.country} - ${location.location}</div>
+              <div class="popup-body">${location.description}</div>
+              <div class="popup-footer"><a href="${location.source}" target="_blank" rel="noopener noreferrer">Source</a></div>
+            </div>`
+          );
 
-    const filtered = selectedType === "All"
-      ? data
-      : data.filter((item) => item["Type of Law"] === selectedType);
+          new mapboxgl.Marker({ color: 'black' })
+            .setLngLat([location.lng, location.lat])
+            .setPopup(popup)
+            .addTo(map.current);
+        });
+      });
+    }
+  }, [filteredLocations]);
 
-    filtered.forEach((location) => {
-      const popupContent = document.createElement("div");
-      popupContent.innerHTML = `
-        <div style="background-color: #f1ede7; padding: 10px; border-radius: 5px;">
-          <strong>${location.Country}</strong><br />
-          ${location["Short description"]}
-        </div>
-      `;
-      const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setDOMContent(popupContent);
-
-      new mapboxgl.Marker({ color: "#333" })
-        .setLngLat([parseFloat(location.Longitude), parseFloat(location.Latitude)])
-        .setPopup(popup)
-        .addTo(map.current);
-    });
-  }, [selectedType, data]);
+  useEffect(() => {
+    setFilteredLocations(
+      selectedType === 'All'
+        ? locations
+        : locations.filter((loc) => loc.type === selectedType)
+    );
+  }, [selectedType, locations]);
 
   return (
-    <div style={{ position: "relative", width: "100%", height: "100vh" }}>
-      <img
-        src="/global-plastic-watch-logo.svg"
-        alt="Logo"
-        style={{
-          position: "absolute",
-          top: 10,
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 10,
-          height: "50px",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          top: 70,
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 10,
-          display: "flex",
-          gap: "12px",
-          background: "rgba(0,0,0,0.6)",
-          borderRadius: "30px",
-          padding: "10px 20px",
-          overflowX: "auto",
-        }}
-      >
+    <>
+      <div className="logo">🌍 Global Plastic Watch</div>
+      <div className="filter-tabs">
         {types.map((type) => (
           <button
             key={type}
+            className={`filter-tab ${selectedType === type ? 'active' : ''}`}
             onClick={() => setSelectedType(type)}
-            style={{
-              background: selectedType === type ? "#ccff00" : "transparent",
-              color: selectedType === type ? "#000" : "#fff",
-              border: "none",
-              borderRadius: "20px",
-              padding: "8px 16px",
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-            }}
           >
             {type}
           </button>
         ))}
       </div>
-      <div ref={mapContainer} style={{ width: "100%", height: "100%" }} />
-    </div>
+      <div ref={mapContainer} className="map-container" />
+    </>
   );
 };
 
