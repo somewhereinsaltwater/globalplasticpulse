@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -10,7 +9,6 @@ const GlobalPlasticsMap = () => {
   const map = useRef(null);
   const [locations, setLocations] = useState([]);
   const [selectedType, setSelectedType] = useState('All');
-  const [uniqueTypes, setUniqueTypes] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -20,7 +18,7 @@ const GlobalPlasticsMap = () => {
 
         const records = data.records.map((record) => ({
           country: record.fields.Country,
-          region: record.fields.Location,
+          location: record.fields.Location,
           lat: record.fields.Latitude,
           lng: record.fields.Longitude,
           type: record.fields['Type of Law'],
@@ -29,11 +27,9 @@ const GlobalPlasticsMap = () => {
         }));
 
         setLocations(records);
-        const types = ['All', ...new Set(records.map((r) => r.type).filter(Boolean))];
-        setUniqueTypes(types);
       } catch (error) {
-        console.error('❌ Failed to load data from API route:', error);
-        alert('API fetch failed. Check console for more details.');
+        console.error('Failed to load data from API route:', error);
+        alert('❌ API route fetch failed – check logs!');
       }
     };
 
@@ -50,88 +46,72 @@ const GlobalPlasticsMap = () => {
       });
     }
 
-    if (map.current) {
-      map.current.markers?.forEach((marker) => marker.remove());
-      map.current.markers = [];
+    return () => map.current?.remove();
+  }, []);
 
-      const filtered = selectedType === 'All' ? locations : locations.filter((l) => l.type === selectedType);
+  useEffect(() => {
+    if (map.current && locations.length) {
+      // Clear existing markers
+      const markerElements = document.querySelectorAll('.mapboxgl-marker');
+      markerElements.forEach((el) => el.remove());
+
+      const filtered = selectedType === 'All'
+        ? locations
+        : locations.filter((l) => l.type === selectedType);
 
       filtered.forEach((location) => {
-        const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(\`
+        const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
           <div style="
+            font-family: sans-serif;
             background-color: #f1ede7;
-            border: 2px solid black;
             padding: 16px;
-            max-width: 280px;
-            font-family: 'Helvetica Neue', sans-serif;
-            color: #000;
-            font-size: 14px;
-            border-radius: 8px;
-            box-shadow: 3px 3px 0 #000;
+            max-width: 260px;
+            font-size: 13px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            line-height: 1.4;
           ">
-            <div style="font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #ff5800;">
-              \${location.type?.toUpperCase() || 'POLICY'}
-            </div>
-            <div style="font-size: 16px; font-weight: 700; margin-bottom: 6px;">
-              \${location.country}\${location.region ? \` — \${location.region}\` : ''}
-            </div>
-            <div style="margin-bottom: 10px; line-height: 1.4;">
-              \${location.description}
-            </div>
-            <a href="\${location.source}" target="_blank" rel="noopener noreferrer" style="
-              display: inline-block;
-              margin-top: 8px;
-              padding: 6px 10px;
-              font-size: 12px;
-              font-weight: bold;
-              background-color: black;
-              color: white;
-              text-decoration: none;
-              border-radius: 4px;
-            ">READ MORE</a>
+            <div style="font-weight: bold; font-size: 14px;">${location.country} – ${location.location}</div>
+            <div style="margin: 6px 0;"><strong>Type:</strong> ${location.type}</div>
+            <div>${location.description}</div>
+            <div style="margin-top: 8px;"><a href="${location.source}" target="_blank" rel="noopener noreferrer">🔗 Source</a></div>
           </div>
-        \`);
+        `);
 
-        const markerEl = document.createElement('div');
-        markerEl.style.width = '16px';
-        markerEl.style.height = '16px';
-        markerEl.style.backgroundColor = 'black';
-        markerEl.style.borderRadius = '50%';
-        markerEl.style.border = '2px solid white';
-        markerEl.style.boxShadow = '0 0 4px rgba(0,0,0,0.3)';
-        markerEl.style.cursor = 'pointer';
-
-        const marker = new mapboxgl.Marker(markerEl)
+        new mapboxgl.Marker({ color: 'black' })
           .setLngLat([location.lng, location.lat])
           .setPopup(popup)
           .addTo(map.current);
-
-        map.current.markers.push(marker);
       });
     }
   }, [locations, selectedType]);
 
+  const lawTypes = ['All', ...new Set(locations.map((loc) => loc.type))];
+
   return (
     <>
-      <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 999 }}>
+      <div style={{ position: 'absolute', zIndex: 999, top: 10, left: 10 }}>
         <select
           value={selectedType}
           onChange={(e) => setSelectedType(e.target.value)}
           style={{
-            padding: '8px',
+            padding: '6px 10px',
+            fontSize: '14px',
             borderRadius: '4px',
             border: '1px solid #ccc',
-            fontSize: '14px',
+            backgroundColor: 'white',
           }}
         >
-          {uniqueTypes.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
+          {lawTypes.map((type) => (
+            <option key={type} value={type}>{type}</option>
           ))}
         </select>
       </div>
-      <div ref={mapContainer} style={{ width: '100%', height: '100vh' }} />
+
+      <div
+        ref={mapContainer}
+        style={{ width: '100%', height: '100vh' }}
+      />
     </>
   );
 };
