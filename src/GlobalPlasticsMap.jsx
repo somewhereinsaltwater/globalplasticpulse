@@ -48,14 +48,18 @@ const GlobalPlasticsMap = () => {
     locations
       .filter(loc => selectedType === 'All' || loc.type === selectedType)
       .forEach((location) => {
-        const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
-          <div class="popup-box">
-            <strong>${location.country} – ${location.location}</strong><br />
-            <em>${location.type}</em><br />
-            <p>${location.description}</p>
-            <a href="${location.source}" target="_blank" rel="noopener noreferrer">View Source</a>
-          </div>
-        `);
+        const popup = new mapboxgl.Popup({
+  offset: 25,
+  closeButton: false,
+}).setHTML(`
+  <div class="popup-box">
+    <div class="popup-type">${location.type?.toUpperCase() || 'LAW TYPE'}</div>
+    <div class="popup-title">${location.country}${location.region ? ` — ${location.region}` : ''}</div>
+    <div class="popup-description">${location.description}</div>
+    <a href="${location.source}" target="_blank" rel="noopener noreferrer" class="popup-link">READ MORE</a>
+  </div>
+`);
+
         new mapboxgl.Marker({ color: 'black' })
           .setLngLat([location.lng, location.lat])
           .setPopup(popup)
