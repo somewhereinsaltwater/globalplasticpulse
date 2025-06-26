@@ -56,7 +56,7 @@
 /* Updated filter container styling */
 .filter-container {
   position: absolute;
-  top: 150px; /* shifted down to appear below the logo */
+  top: 120px; /* shifted down to appear below the logo */
   left: 50%;
   transform: translateX(-50%);
   display: flex;
