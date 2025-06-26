@@ -18,6 +18,8 @@
   line-height: 1.4;
 }
 
+
+
 /* New popup internal layout */
 .popup-type {
   font-size: 11px;
@@ -51,6 +53,18 @@
 
 .mapboxgl-popup-tip {
   display: none !important;
+}
+
+/* Smooth popup transition */
+.mapboxgl-popup-content.popup-fade {
+  opacity: 0;
+  animation: fadeInPopup 0.3s ease-in forwards;
+}
+
+@keyframes fadeInPopup {
+  to {
+    opacity: 1;
+  }
 }
 
 /* Updated filter container styling */
