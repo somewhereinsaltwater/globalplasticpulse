@@ -56,8 +56,8 @@
 
 /* Fade-in animation for popup content */
 .popup-fade {
-  opacity: 0;
   animation: fadeInPopup 0.3s ease-in forwards;
+  opacity: 0;
 }
 
 @keyframes fadeInPopup {
