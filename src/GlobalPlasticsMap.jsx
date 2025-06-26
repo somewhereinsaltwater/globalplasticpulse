@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import './GlobalPlasticsMap.css';
+import 'mapbox-gl/dist/mapbox-gl.css';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
@@ -32,41 +33,36 @@ const GlobalPlasticsMap = () => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    if (!map.current && mapContainer.current) {
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/light-v11',
-        center: [0, 20],
-        zoom: 1.5,
-      });
-    }
+ useEffect(() => {
+  if (!map.current && mapContainer.current) {
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/light-v11',
+      center: [0, 20],
+      zoom: 1.5,
+    });
+  }
 
-    if (map.current && locations.length) {
-      map.current.eachLayer((layer) => {
-        if (layer.id !== 'background' && map.current.getLayer(layer.id)) {
-          map.current.removeLayer(layer.id);
-        }
+  if (map.current && locations.length) {
+    // No need to remove layers like Leaflet – just add markers
+    locations
+      .filter(loc => selectedType === 'All' || loc.type === selectedType)
+      .forEach((location) => {
+        const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
+          <div class="popup-box">
+            <strong>${location.country} – ${location.location}</strong><br />
+            <em>${location.type}</em><br />
+            <p>${location.description}</p>
+            <a href="${location.source}" target="_blank" rel="noopener noreferrer">View Source</a>
+          </div>
+        `);
+        new mapboxgl.Marker({ color: 'black' })
+          .setLngLat([location.lng, location.lat])
+          .setPopup(popup)
+          .addTo(map.current);
       });
-
-      locations
-        .filter(loc => selectedType === 'All' || loc.type === selectedType)
-        .forEach((location) => {
-          const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
-            <div class="popup-box">
-              <strong>${location.country} – ${location.location}</strong><br />
-              <em>${location.type}</em><br />
-              <p>${location.description}</p>
-              <a href="${location.source}" target="_blank" rel="noopener noreferrer">View Source</a>
-            </div>
-          `);
-          new mapboxgl.Marker({ color: 'black' })
-            .setLngLat([location.lng, location.lat])
-            .setPopup(popup)
-            .addTo(map.current);
-        });
-    }
-  }, [locations, selectedType]);
+  }
+}, [locations, selectedType]);
 
   const types = ['All', ...Array.from(new Set(locations.map(loc => loc.type)))];
 
