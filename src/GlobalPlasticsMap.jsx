@@ -1,6 +1,9 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import './style.css';
+import logo from './assets/global-plastic-watch-logo.svg'; // adjust path if needed
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
@@ -18,12 +21,11 @@ const GlobalPlasticsMap = () => {
 
         const records = data.records.map((record) => ({
           country: record.fields.Country,
-          location: record.fields.Location,
           lat: record.fields.Latitude,
           lng: record.fields.Longitude,
           type: record.fields['Type of Law'],
           description: record.fields.Description,
-          source: record.fields.URL,
+          source: record.fields.URL
         }));
 
         setLocations(records);
@@ -37,7 +39,7 @@ const GlobalPlasticsMap = () => {
 
   const types = ['All', ...Array.from(new Set(locations.map(loc => loc.type)))];
 
-  const filtered = selectedType === 'All'
+  const filteredLocations = selectedType === 'All'
     ? locations
     : locations.filter(loc => loc.type === selectedType);
 
@@ -52,90 +54,89 @@ const GlobalPlasticsMap = () => {
     }
 
     if (map.current) {
-      map.current.on('load', () => {
-        filtered.forEach((location) => {
-          const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(
-            `<div style="
-              background-color: #f1ede7;
-              padding: 12px;
-              border-radius: 8px;
-              font-family: sans-serif;
-              max-width: 260px;
-            ">
-              <div style="font-weight: bold; margin-bottom: 6px;">${location.country} — ${location.location}</div>
-              <div style="margin-bottom: 4px;"><strong>${location.type}</strong></div>
-              <div style="margin-bottom: 8px;">${location.description}</div>
-              <a href="${location.source}" target="_blank" style="color: #007aff; text-decoration: underline;">Read more</a>
-            </div>`
-          );
+      // Clear existing markers
+      map.current.eachLayer?.((layer) => {
+        if (layer.type === 'symbol') map.current.removeLayer(layer.id);
+      });
 
-          new mapboxgl.Marker({ color: 'black' })
-            .setLngLat([location.lng, location.lat])
-            .setPopup(popup)
-            .addTo(map.current);
-        });
+      filteredLocations.forEach((location) => {
+        const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
+          <div style="
+            background-color: #f1ede7;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #222;
+          ">
+            <strong>${location.country}</strong><br />
+            <em>${location.type}</em><br />
+            ${location.description}<br />
+            <a href="${location.source}" target="_blank" style="color:#0077cc">Read more</a>
+          </div>
+        `);
+
+        new mapboxgl.Marker({ color: 'black' })
+          .setLngLat([location.lng, location.lat])
+          .setPopup(popup)
+          .addTo(map.current);
       });
     }
-  }, [filtered]);
+  }, [filteredLocations]);
 
   return (
-    <>
-      {/* Logo */}
-      <div style={{
-        position: 'absolute',
-        top: '12px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 1001,
-      }}>
-        <img src="/logo.svg" alt="Global Plastic Watch" style={{ height: '48px' }} />
-      </div>
+    <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
+      <div
+        ref={mapContainer}
+        style={{ width: '100%', height: '100vh' }}
+      />
 
-      {/* Filter Tabs */}
-      <div style={{
-        position: 'absolute',
-        top: '70px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 1001,
-        display: 'flex',
-        gap: '8px',
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
-        borderRadius: '20px',
-        padding: '4px 8px',
-        overflowX: 'auto',
-      }}>
+      <img
+        src={logo}
+        alt="Global Plastic Watch Logo"
+        style={{
+          position: 'absolute',
+          top: 10,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 1000,
+          maxWidth: '220px',
+        }}
+      />
+
+      <div
+        style={{
+          position: 'absolute',
+          top: 80,
+          left: 10,
+          zIndex: 1000,
+          display: 'flex',
+          gap: '8px',
+          flexWrap: 'wrap',
+          background: 'rgba(255,255,255,0.8)',
+          padding: '6px 12px',
+          borderRadius: '12px',
+        }}
+      >
         {types.map((type) => (
           <button
             key={type}
             onClick={() => setSelectedType(type)}
             style={{
-              padding: '6px 12px',
+              padding: '6px 10px',
               borderRadius: '20px',
               border: 'none',
-              backgroundColor: selectedType === type ? '#007aff' : 'transparent',
+              cursor: 'pointer',
+              background: selectedType === type ? '#0077cc' : '#eee',
               color: selectedType === type ? '#fff' : '#333',
               fontWeight: 'bold',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
+              transition: 'all 0.3s ease',
             }}
           >
             {type}
           </button>
         ))}
       </div>
-
-      {/* Map Container */}
-      <div
-        ref={mapContainer}
-        style={{
-          width: '100%',
-          height: '100vh',
-          position: 'relative',
-          zIndex: 0,
-        }}
-      />
-    </>
+    </div>
   );
 };
 
