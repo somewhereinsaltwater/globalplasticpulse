@@ -1,56 +1,76 @@
-.map-wrapper {
+
+/* General map container */
+.map-container {
   position: relative;
   height: 100vh;
   width: 100vw;
-  overflow: hidden;
 }
 
-.map-container {
-  width: 100%;
-  height: 100%;
+/* Popup styling inspired by neon UI */
+.mapboxgl-popup-content {
+  background-color: #1e1e1e;
+  color: #f0f0f0;
+  border-radius: 8px;
+  font-family: 'Helvetica Neue', sans-serif;
+  padding: 1em;
+  box-shadow: 0 0 10px #00ff88;
+  border: 1px solid #00ff88;
+  max-width: 300px;
 }
 
-.logo {
+/* Filter container styled as neon sliding tabs */
+.filter-container {
   position: absolute;
-  top: 10px;
+  top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 10;
-  height: 40px;
-}
-
-.filter-tabs {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: center;
+  background-color: #000;
+  border: 2px solid #00ff88;
+  border-radius: 30px;
+  overflow: hidden;
+  z-index: 9999;
 }
 
-.tab {
-  padding: 8px 16px;
-  border: none;
-  background: #f1ede7;
-  color: black;
-  font-weight: bold;
-  border-radius: 20px;
+.filter-tab {
+  padding: 10px 20px;
+  color: #00ff88;
+  background-color: #000;
+  border-right: 1px solid #00ff88;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: background-color 0.3s, color 0.3s;
 }
 
-.tab.active {
-  background: black;
-  color: white;
+.filter-tab:last-child {
+  border-right: none;
 }
 
-.popup-box {
-  background-color: #f1ede7;
-  border-radius: 10px;
-  padding: 10px;
-  font-size: 13px;
-  max-width: 250px;
+.filter-tab.active {
+  background-color: #00ff88;
+  color: #000;
+}
+
+/* Centered logo styling */
+.logo-container {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+}
+
+.logo-container img {
+  height: 60px;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .filter-tab {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  .logo-container img {
+    height: 40px;
+  }
 }
