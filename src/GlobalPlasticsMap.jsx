@@ -48,17 +48,41 @@ const GlobalPlasticsMap = () => {
     locations
       .filter(loc => selectedType === 'All' || loc.type.includes(selectedType))
       .forEach((location) => {
-        const popup = new mapboxgl.Popup({
-  offset: 25,
-  closeButton: false,
-}).setHTML(`
-  <div class="popup-box">
-    <div class="popup-type">${location.type?.toUpperCase() || 'LAW TYPE'}</div>
-    <div class="popup-title">${location.country}${location.region ? ` — ${location.region}` : ''}</div>
-    <div class="popup-description">${location.description}</div>
-    <a href="${location.source}" target="_blank" rel="noopener noreferrer" class="popup-link">READ MORE</a>
-  </div>
-`);
+            const popup = new mapboxgl.Popup({
+      offset: 25,
+      closeButton: false,
+    }).setHTML(`
+      <div style="
+        background-color: #f1ede7;
+        border: 2px solid black;
+        padding: 16px;
+        max-width: 280px;
+        font-family: 'Helvetica Neue', sans-serif;
+        color: #000;
+        font-size: 14px;
+        border-radius: 8px;
+        box-shadow: 3px 3px 0 #000;
+      ">
+        <div style="font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #ff5800;">
+          ${Array.isArray(location.type) ? location.type.join(', ').toUpperCase() : (location.type || 'LAW TYPE')}
+        </div>
+        <div style="font-size: 16px; font-weight: 700; margin-bottom: 6px;">
+          ${location.country}${location.region ? ` — ${location.region}` : ''}
+        </div>
+        <div style="margin-bottom: 10px; line-height: 1.4;">${location.description}</div>
+        <a href="${location.source}" target="_blank" rel="noopener noreferrer" style="
+          display: inline-block;
+          margin-top: 8px;
+          padding: 6px 10px;
+          font-size: 12px;
+          font-weight: bold;
+          background-color: black;
+          color: white;
+          text-decoration: none;
+          border-radius: 4px;
+        ">READ MORE</a>
+      </div>
+    `);
 
         new mapboxgl.Marker({ color: 'black' })
           .setLngLat([location.lng, location.lat])
