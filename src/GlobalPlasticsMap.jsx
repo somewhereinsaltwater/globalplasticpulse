@@ -73,7 +73,7 @@ const GlobalPlasticsMap = () => {
 
   return (
     <div className="map-wrapper">
-      <img src={logo} alt="Global Plastic Watch Logo" className="logo" />
+      <img src="/global-plastic-watch-logo.svg" alt="Global Plastic Watch Logo" className="logo" />
       <div className="filter-tabs">
         {types.map((type) => (
           <button
