@@ -18,9 +18,6 @@
   line-height: 1.4;
 }
 
-.mapboxgl-popup {
-  z-index: 10001 !important;
-}
 
 /* New popup internal layout */
 .popup-type {
@@ -67,6 +64,10 @@
   to {
     opacity: 1;
   }
+}
+
+.mapboxgl-popup {
+  z-index: 10001 !important;
 }
 
 /* Updated filter container styling */
