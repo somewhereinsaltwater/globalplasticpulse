@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import './GlobalPlasticsMap.css';
@@ -50,12 +49,14 @@ const GlobalPlasticsMap = () => {
     }
 
     if (map.current) {
-      popupRefs.current.forEach(p => p.remove());
+      popupRefs.current.forEach((p) => p.remove());
       popupRefs.current = [];
       markerRefs.current = [];
 
       const existingMarkers = document.querySelectorAll('.mapboxgl-marker');
       existingMarkers.forEach((marker) => marker.remove());
+
+      let activePopup = null;
 
       locations
         .filter((location) =>
@@ -63,14 +64,9 @@ const GlobalPlasticsMap = () => {
           location.type.some((t) => activeTypes.includes(t))
         )
         .forEach((location) => {
-          const popup = new mapboxgl.Popup({
-            offset: 25,
-            closeButton: false,
-          }).setDOMContent(document.createElement('div'));
-
-          const htmlContent = document.createElement('div');
-          htmlContent.className = 'popup-content';
-          htmlContent.innerHTML = `
+          const popupContent = document.createElement('div');
+          popupContent.className = 'popup-content';
+          popupContent.innerHTML = `
             <div style="
               background-color: #f1ede7;
               border: 2px solid black;
@@ -107,20 +103,25 @@ const GlobalPlasticsMap = () => {
             </div>
           `;
 
-          popup.setDOMContent(htmlContent);
+          const popup = new mapboxgl.Popup({
+            offset: 25,
+            closeButton: false,
+          }).setDOMContent(popupContent);
 
           const marker = new mapboxgl.Marker({ color: 'black' })
             .setLngLat([location.lng, location.lat])
             .addTo(map.current);
 
           marker.getElement().addEventListener('click', () => {
-            if (popup.isOpen()) {
+            if (activePopup === popup) {
               popup.remove();
+              activePopup = null;
             } else {
-              popup.addTo(map.current);
-              popup.setLngLat([location.lng, location.lat]);
+              if (activePopup) activePopup.remove();
+              popup.setLngLat([location.lng, location.lat]).addTo(map.current);
+              activePopup = popup;
               requestAnimationFrame(() => {
-                htmlContent.firstChild.style.opacity = '1';
+                popupContent.firstChild.style.opacity = '1';
               });
             }
           });
