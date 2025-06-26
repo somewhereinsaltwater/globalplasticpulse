@@ -7,7 +7,7 @@
 
 /* Default Popup styling */
 .mapboxgl-popup-content {
-  background-color: transparent !important;
+  background-color: ffffff;
   padding: 0 !important;
   max-width: 280px;
   color: #000;
