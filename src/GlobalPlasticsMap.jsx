@@ -101,6 +101,8 @@ const GlobalPlasticsMap = () => {
           </div>
         `;
 
+popup.setDOMContent(popupContent);
+
         const popup = new mapboxgl.Popup({
           offset: 25,
           closeButton: false,
