@@ -5,7 +5,7 @@
   width: 100vw;
 }
 
-/* Default Popup styling (old neon UI, can be removed if not needed) */
+/* Default Popup styling */
 .mapboxgl-popup-content {
   background-color: #f1ede7;
   border: 2px solid black;
@@ -50,36 +50,43 @@
   border-radius: 4px;
 }
 
-/* Filter container styled as neon sliding tabs */
+/* Updated filter container styling */
 .filter-container {
   position: absolute;
-  top: 20px;
+  top: 100px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  background-color: #000;
-  border: 2px solid #00ff88;
-  border-radius: 30px;
-  overflow: hidden;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
   z-index: 9999;
+  max-width: 90%;
 }
 
+/* Updated filter toggle button */
 .filter-tab {
-  padding: 10px 20px;
-  color: #00ff88;
-  background-color: #000;
-  border-right: 1px solid #00ff88;
+  background-color: #f1ede7;
+  border: 2px solid black;
+  color: black;
+  font-family: 'Helvetica Neue', sans-serif;
+  font-size: 13px;
+  font-weight: bold;
+  padding: 6px 12px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.3s, color 0.3s;
+  box-shadow: 2px 2px 0 #000;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.filter-tab:last-child {
-  border-right: none;
+.filter-tab:hover {
+  background-color: #ff5800;
+  color: white;
 }
 
 .filter-tab.active {
-  background-color: #00ff88;
-  color: #000;
+  background-color: black;
+  color: white;
 }
 
 /* Centered logo styling */
@@ -99,11 +106,16 @@
 /* Responsive styles */
 @media (max-width: 768px) {
   .filter-tab {
-    padding: 8px 12px;
-    font-size: 14px;
+    padding: 6px 10px;
+    font-size: 12px;
   }
 
   .logo img {
     height: 40px;
+  }
+
+  .filter-container {
+    top: 80px;
+    gap: 6px;
   }
 }
