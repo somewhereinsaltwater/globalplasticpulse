@@ -138,7 +138,8 @@
   }
 
   .filter-container {
-    top: 150px;
+    top: 120px;
     gap: 6px;
+    max-width: 95%;
   }
 }
