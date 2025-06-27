@@ -138,6 +138,13 @@
     padding: 6px 10px;
     font-size: 12px;
   }
+
+.filter-tab:hover {
+  background-color: #f1ede7; 
+  color: white;
+}
+
+
   .logo img {
     height: 60px;
   }
