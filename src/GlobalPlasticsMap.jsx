@@ -105,19 +105,9 @@ const GlobalPlasticsMap = () => {
           popup.setDOMContent(popupContent);
 
           const marker = new mapboxgl.Marker({ color: 'black' })
-            .setLngLat([location.lng, location.lat])
-            .addTo(map.current);
-
-          marker.getElement().addEventListener('click', () => {
-            if (activePopupRef.current === popup) {
-              popup.remove();
-              activePopupRef.current = null;
-            } else {
-              if (activePopupRef.current) activePopupRef.current.remove();
-              popup.setLngLat([location.lng, location.lat]).addTo(map.current);
-              activePopupRef.current = popup;
-            }
-          });
+  .setLngLat([location.lng, location.lat])
+  .setPopup(popup) // attach popup to marker
+  .addTo(map.current);
         });
     }
   }, [locations, activeTypes]);
