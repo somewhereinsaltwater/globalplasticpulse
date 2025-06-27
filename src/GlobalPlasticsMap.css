@@ -103,12 +103,12 @@
 }
 
 .filter-tab:hover {
-  background-color: #ff5800;
+  background-color: black;
   color: white;
 }
 
 .filter-tab.active {
-  background-color: black;
+  background-color: #ff5800;
   color: white;
 }
 
@@ -128,19 +128,26 @@
 
 /* Responsive styles */
 @media (max-width: 768px) {
+
+  .filter-container {
+    top: 120px;
+    gap: 6px;
+    width: 95vw;
+  }
   .filter-tab {
     padding: 6px 10px;
     font-size: 12px;
   }
 
+.filter-tab:hover {
+  background-color: #f1ede7;
+  color: black;
+}
+
+
   .logo img {
     height: 60px;
   }
 
-  .filter-container {
-    top: 120px;
-    gap: 6px;
-    width: 95%;
-    max-width: 95%;
-  }
+
 }
