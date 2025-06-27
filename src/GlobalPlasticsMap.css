@@ -127,7 +127,7 @@
 }
 
 /* Responsive styles */
-@media (max-width: 768px) {
+@media (max-width: 768px)(hover: none) {
 
   .filter-container {
     top: 120px;
@@ -140,8 +140,8 @@
   }
 
 .filter-tab:hover {
-  background-color: display: none;
-  color: display: none;
+  background-color: initial; 
+  color: display: initial;
 }
 
 
