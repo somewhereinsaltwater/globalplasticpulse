@@ -21,10 +21,14 @@
 map.current = new mapboxgl.Map({
   container: mapContainer.current,
   style: 'mapbox://styles/mapbox/light-v11',
-  center: [-100, 40], // Center on North America
+  center: [-100, 40],
   zoom: 2.5,
 });
 
+map.current.on('load', () => {
+  map.current.setCenter([-100, 40]);
+  map.current.setZoom(2.5);
+});
 /* New popup internal layout */
 
 
