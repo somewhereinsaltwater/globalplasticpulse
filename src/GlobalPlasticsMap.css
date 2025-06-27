@@ -18,6 +18,12 @@
   line-height: 1.4;
 }
 
+map.current = new mapboxgl.Map({
+  container: mapContainer.current,
+  style: 'mapbox://styles/mapbox/light-v11',
+  center: [-100, 40], // Center on North America
+  zoom: 2.5,
+});
 
 /* New popup internal layout */
 
