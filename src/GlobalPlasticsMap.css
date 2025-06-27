@@ -140,6 +140,7 @@
   .filter-container {
     top: 120px;
     gap: 6px;
+    width: 95%;
     max-width: 95%;
   }
 }
