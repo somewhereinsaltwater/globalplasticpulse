@@ -39,12 +39,12 @@ const GlobalPlasticsMap = () => {
 
   useEffect(() => {
     if (!map.current && mapContainer.current) {
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/light-v11',
-        center: [0, 20],
-        zoom: 1.5,
-      });
+    map.current = new mapboxgl.Map({
+  container: mapContainer.current,
+  style: 'mapbox://styles/mapbox/light-v11',
+  center: [-100, 40],  // ← North America
+  zoom: 2.5,
+});
     }
 
     if (map.current) {
