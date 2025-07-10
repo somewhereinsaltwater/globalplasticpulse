@@ -119,8 +119,8 @@ const GlobalPlasticsMap = () => {
   return (
     <div className="map-wrapper">
       <img
-        src="/global-plastic-watch-logo.svg"
-        alt="Global Plastic Watch Logo"
+        src="/global-plastic-pulse-logo.svg"
+        alt="Global Plastic Pulse Logo"
         className="logo"
       />
       <div className="filter-container">
